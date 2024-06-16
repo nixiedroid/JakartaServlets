@@ -78,7 +78,22 @@ jar {
                 "Build-OS"              : "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}"
         )
     }
+    from {
+        configurations.runtimeClasspath.collect {
+             it.isDirectory() ? it : zipTree(it)
+
+        }
+    }
+    exclude("module-info.class")
+    exclude("META-INF/ECLIPSE_.SF")
+    exclude("META-INF/ECLIPSE_.RSA")
+    exclude("META-INF/LICENSE.md")
+    exclude("META-INF/LICENSE")
+    exclude("META-INF/NOTICE")
+    exclude("META-INF/NOTICE.md")
+    duplicatesStrategy = DuplicatesStrategy.WARN
 }
+
 
 //https://docs.gradle.org/4.9/userguide/working_with_files.html#sec:reproducible_archives
 //Make gradle builds deterministic

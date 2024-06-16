@@ -1,9 +1,6 @@
 package com.nixiedroid.jakarta.rest;
 
-import com.nixiedroid.jakarta.rest.servlets.HttpServlet;
-import com.nixiedroid.jakarta.rest.servlets.MethodsServlet;
-import com.nixiedroid.jakarta.rest.servlets.RootServlet;
-import com.nixiedroid.jakarta.rest.servlets.ServletLoader;
+import com.nixiedroid.jakarta.rest.loader.ServletLoader;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
@@ -23,7 +20,7 @@ public class AppLauncher {
     //jar -xvf rest-1.0-SNAPSHOT.war
     //java -cp "WEB-INF\classes\;WEB-INF\lib\*" com.nixiedroid.jakarta.rest.AppLauncher
 
-    //"C:\Program Files\Java\jdk-17.0.2\bin\jar.exe" -xvf rest-1.0-SNAPSHOT.war && java -cp "WEB-INF\classes\;WEB-INF\lib\*" com.nixiedroid.jakarta.rest.AppLauncher
+    //"C:\Program Files\Java\jdk-17.0.2\bin\jar.exe" -xvf JakartaServlets-1.0-SNAPSHOT.war && java -cp "WEB-INF\classes\;WEB-INF\lib\*" com.nixiedroid.jakarta.rest.AppLauncher
     public static void main(String[] args) {
         try {
             new AppLauncher();
@@ -44,9 +41,13 @@ public class AppLauncher {
         String docBase = new File(".").getAbsolutePath();
         Context context = tomcat.addContext(contextPath, docBase);
         ServletLoader loader = new ServletLoader(tomcat,context);
-        loader.loadServlet(MethodsServlet.class);
-        loader.loadServlet(RootServlet.class);
-        loader.loadServlet(HttpServlet.class);
+//        String contextPath = "/";
+//        String appBase = ".";
+//
+//        tomcat.getHost().setAppBase(appBase);
+//        tomcat.addWebapp(contextPath, appBase);
+//        Context context = tomcat.addContext(contextPath, appBase);
+//        new ServletLoader(tomcat, context);
     }
 
     private Connector createConnector() {
