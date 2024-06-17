@@ -7,6 +7,9 @@ import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 
 import java.io.File;
+import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class AppLauncher {
     private final Tomcat tomcat = new Tomcat();
@@ -36,18 +39,26 @@ public class AppLauncher {
     }
 
     private void initTomcatCtx() {
-        tomcat.setBaseDir(".");
-        String contextPath = "";
-        String docBase = new File(".").getAbsolutePath();
-        Context context = tomcat.addContext(contextPath, docBase);
-        ServletLoader loader = new ServletLoader(tomcat,context);
-//        String contextPath = "/";
-//        String appBase = ".";
-//
-//        tomcat.getHost().setAppBase(appBase);
-//        tomcat.addWebapp(contextPath, appBase);
-//        Context context = tomcat.addContext(contextPath, appBase);
-//        new ServletLoader(tomcat, context);
+        String webappExplodedLocation = "src/main/webapp/";
+        String classPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+        Context context;
+        if (classPath.endsWith(".jar")) {
+            String basedir;
+            try {
+                Field f = tomcat.getClass().getDeclaredField("basedir");
+                f.setAccessible(true);
+                basedir = (String) f.get(tomcat);
+                f.setAccessible(false);
+            } catch (ReflectiveOperationException e) {
+                basedir = System.getProperty("java.io.tmpdir");
+            }
+            context = tomcat.addWebapp("/", basedir);
+        } else if (Files.exists(Path.of(webappExplodedLocation))) {
+            context = tomcat.addWebapp("/", new File(webappExplodedLocation).getAbsolutePath());
+        } else {
+            context = tomcat.addWebapp("/", new File(".").getAbsolutePath());
+        }
+        new ServletLoader(tomcat, context);
     }
 
     private Connector createConnector() {

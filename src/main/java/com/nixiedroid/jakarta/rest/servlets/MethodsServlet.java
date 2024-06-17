@@ -13,7 +13,7 @@ public class MethodsServlet extends HttpServlet {
     private void writeMethod(HttpServletResponse response, String string) throws IOException {
         response.setContentType("text/html");
         try (PrintWriter writer = response.getWriter()) {
-            writer.println("<h1> Method" + string + "</h2>");
+            writer.println("<h1> Method: " + string + "</h2>");
         }
     }
 
