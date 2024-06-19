@@ -7,7 +7,6 @@ import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -39,25 +38,15 @@ public class AppLauncher {
     }
 
     private void initTomcatCtx() {
-        String webappExplodedLocation = "src/main/webapp/";
-        String classPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+        String srcWebappPath = "src/main/webapp/";
         Context context;
-        if (classPath.endsWith(".jar")) {
-            String basedir;
-            try {
-                Field f = tomcat.getClass().getDeclaredField("basedir");
-                f.setAccessible(true);
-                basedir = (String) f.get(tomcat);
-                f.setAccessible(false);
-            } catch (ReflectiveOperationException e) {
-                basedir = System.getProperty("java.io.tmpdir");
-            }
-            context = tomcat.addWebapp("/", basedir);
-        } else if (Files.exists(Path.of(webappExplodedLocation))) {
-            context = tomcat.addWebapp("/", new File(webappExplodedLocation).getAbsolutePath());
-        } else {
+        if (Files.exists(Path.of(srcWebappPath))) {  //Running inside IDE
+            context = tomcat.addWebapp("/", new File(srcWebappPath).getAbsolutePath());
+        } else { //Running from jar file OR
             context = tomcat.addWebapp("/", new File(".").getAbsolutePath());
         }
+        //File file = File.createTempFile("tempfile", ".tmp");
+        //  context.setAltDDName("");
         new ServletLoader(tomcat, context);
     }
 

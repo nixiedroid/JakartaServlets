@@ -2,7 +2,8 @@ import java.text.SimpleDateFormat
 
 plugins {
     id 'application'
-//   id 'com.github.johnrengelman.shadow'
+    //  id 'com.github.johnrengelman.shadow'
+    id("io.github.goooler.shadow") version "8.1.7"
     id 'war'
 }
 
@@ -13,12 +14,10 @@ repositories {
     mavenCentral()
 }
 
-//shadowJar{
-//    archiveClassifier.set('fat')
-//    minimize {
-//
-//    }
-//}
+
+shadowJar{
+    archiveClassifier.set('fat')
+}
 
 war {
     enabled=true
@@ -26,16 +25,16 @@ war {
 application {
     mainClass = "com.nixiedroid.jakarta.rest.AppLauncher"
 }
-
-
-
 ext {
-    junitVersion = '5.10.0'
+    junitVersion = '5.10.2'
 }
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 
@@ -44,11 +43,11 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 dependencies {
-    compileOnly('jakarta.enterprise:jakarta.enterprise.cdi-api:4.0.1')
-    compileOnly('jakarta.ws.rs:jakarta.ws.rs-api:3.1.0')
-    compileOnly('jakarta.servlet:jakarta.servlet-api:6.0.0')
-    implementation('org.hibernate:hibernate-core:6.3.1.Final')
-    implementation('org.glassfish.jaxb:jaxb-runtime:4.0.3')
+    compileOnly('jakarta.enterprise:jakarta.enterprise.cdi-api:4.1.0')
+    compileOnly('jakarta.ws.rs:jakarta.ws.rs-api:4.0.0')
+    compileOnly('jakarta.servlet:jakarta.servlet-api:6.1.0')
+    implementation('org.hibernate:hibernate-core:6.5.2.Final')
+   // implementation('org.glassfish.jaxb:jaxb-runtime:4.0.3')
     implementation('org.hibernate.validator:hibernate-validator:8.0.1.Final')
 
     // https://mvnrepository.com/artifact/org.apache.tomcat.embed/tomcat-embed-jasper
@@ -57,6 +56,10 @@ dependencies {
     // https://mvnrepository.com/artifact/jakarta.servlet.jsp.jstl/jakarta.servlet.jsp.jstl-api
     implementation 'jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:3.0.0'
 
+    // https://mvnrepository.com/artifact/org.postgresql/postgresql
+    runtimeOnly 'org.postgresql:postgresql:42.7.3'
+
+
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
 }
@@ -64,7 +67,28 @@ dependencies {
 test {
     useJUnitPlatform()
 }
-
+processResources{
+    from(projectDir){
+        include ("src/main/webapp/**")
+    }
+    eachFile { details ->
+        if (details.path.contains('webapp') && !details.path.contains('WEB-INF')) {
+            details.path = details.relativePath.segments[3..-1].join("/")
+            details.path = "META-INF/resources/$details.path"
+        }
+        if (details.path.contains('WEB-INF')) {
+            details.path = details.relativePath.segments[3..-1].join("/")
+            details.path = "META-INF/resources/$details.path"
+        }
+    }
+    exclude("META-INF/ECLIPSE_.SF")
+    exclude("META-INF/ECLIPSE_.RSA")
+    exclude("META-INF/LICENSE.md")
+    exclude("META-INF/LICENSE")
+    exclude("META-INF/NOTICE")
+    exclude("META-INF/NOTICE.md")
+    duplicatesStrategy = DuplicatesStrategy.WARN
+}
 
 jar {
     manifest {
@@ -79,35 +103,12 @@ jar {
                 "Build-OS"              : "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}"
         )
     }
-    from {
-        configurations.runtimeClasspath.collect {
-             it.isDirectory() ? it : zipTree(it)
-
-        }
-    }
-   processResources{
-       from(projectDir){
-           include ("src/main/webapp/**")
-       }
-   }
-    eachFile { details ->
-        if (details.path.contains('webapp') && !details.path.contains('WEB-INF')) {
-            details.path = details.relativePath.segments[3..-1].join("/")
-            details.path = "META-INF/resources/$details.path"
-        }
-        if (details.path.contains('WEB-INF')) {
-            details.path = details.relativePath.segments[3..-1].join("/")
-            details.path = "META-INF/resources/$details.path"
-        }
-    }
-    exclude("module-info.class")
-    exclude("META-INF/ECLIPSE_.SF")
-    exclude("META-INF/ECLIPSE_.RSA")
-    exclude("META-INF/LICENSE.md")
-    exclude("META-INF/LICENSE")
-    exclude("META-INF/NOTICE")
-    exclude("META-INF/NOTICE.md")
-    duplicatesStrategy = DuplicatesStrategy.WARN
+//    from {
+//        configurations.runtimeClasspath.collect {
+//             it.isDirectory() ? it : zipTree(it)
+//
+//        }
+//    }
 }
 
 

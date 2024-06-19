@@ -8,6 +8,8 @@ import org.apache.catalina.startup.Tomcat;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -23,9 +25,9 @@ import java.util.zip.ZipInputStream;
  */
 public final class ServletLoader {
 
+    private static final String httpServletName = HttpServlet.class.getName();
     private final Tomcat tomcat;
     private final Context ctx;
-    private final static String SERVLETS_PKG = "servlets";
 
     /**
      * Constructor for Servlet loader class
@@ -57,14 +59,14 @@ public final class ServletLoader {
         }
     }
 
-    private String getServletsPackageName() {
+    private String getRootPackageName() {
         String pkgName = this.getClass().getPackageName();
-        if (pkgName.isEmpty()) return SERVLETS_PKG;
+        if (pkgName.isEmpty()) return "";
         int i = pkgName.lastIndexOf('.');
         if (i == -1) {
             i = pkgName.length();
         }
-        return pkgName.substring(0, i) + "." + SERVLETS_PKG;
+        return pkgName.substring(0, i);
     }
 
     private void loadServletClasses(List<String> classPaths) {
@@ -88,17 +90,39 @@ public final class ServletLoader {
     }
 
     public List<String> loadExplodedServlets(String classPath) {
-        File classes = new File(classPath + getServletsPackageName().replace('.', '/'));
+        File classes = new File(classPath + getRootPackageName().replace('.', '/'));
         if (classes.exists()) {
-            File[] fClasses = classes.listFiles();
-            if (fClasses == null) return null;
             List<String> classNames = new ArrayList<>();
-            for (File f : fClasses) {
-                classNames.add(getServletsPackageName() + "." + removeFileExtension(f.getName()));
-            }
-            return classNames;
+            parseFileTree(classes, classNames);
         }
         return null;
+    }
+
+    public void parseFileTree(File root, List<String> classNames) {
+        File[] fClasses = root.listFiles();
+        if (fClasses == null) return;
+        for (File f : fClasses) {
+            if (f.isDirectory()) {
+                parseFileTree(f, classNames);
+            } else {
+                try {
+                    ClassParser.RawInfo info = ClassParser.retrieveInfo(Files.readAllBytes(Path.of(f.toURI())));
+                    if (info.superClassName.replace('/', '.').equals(httpServletName))
+                        classNames.add(f.getPath());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
+    public byte[] read(ZipInputStream zis, int size) throws IOException {
+        byte[] bytes = new byte[size];
+        int read = 0;
+        while (read < size) {
+            read += zis.read(bytes, read, (size - read));
+        }
+        return bytes;
     }
 
     public List<String> loadServletsFromJar(String jarPath) {
@@ -108,8 +132,12 @@ public final class ServletLoader {
             for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()) {
                 if (!entry.isDirectory() && entry.getName().endsWith(".class")) {
                     String className = entry.getName().replace('/', '.');
-                    if (className.startsWith(getServletsPackageName())) {
-                        classNames.add(className.substring(0, className.length() - ".class".length()));
+                    if (className.startsWith(getRootPackageName())) {
+                        ClassParser.RawInfo info = ClassParser.retrieveInfo(read(zip, (int) entry.getSize()));
+                        if (info.superClassName.replace('/', '.')
+                                .equals(httpServletName)) {
+                            classNames.add(className.substring(0, className.length() - ".class".length()));
+                        }
                     }
                 }
             }
