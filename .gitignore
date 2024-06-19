@@ -35,6 +35,8 @@ bin/
 /nbdist/
 /.nb-gradle/
 
+web.xml
+
 ### VS Code ###
 .vscode/
 

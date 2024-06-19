@@ -1,7 +1,7 @@
 package com.nixiedroid.jakarta.rest.loader;
 
 import java.util.function.Function;
-
+@SuppressWarnings("unused")
 public final class ClassParser implements Function<byte[], ClassParser.RawInfo> {
     //https://docs.oracle.com/javase/specs/jvms/se21/html/jvms-4.html
     private static final byte CONSTANT_Class = 7;

@@ -1,13 +1,13 @@
-package com.nixiedroid.jakarta.rest;
+package com.nixiedroid.jakarta.rest.servlets;
 
-import com.nixiedroid.jakarta.rest.servlets.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 
-public class WebXmlServlet  extends jakarta.servlet.http.HttpServlet {
+public class WebXmlServlet  extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("text/html");

@@ -7,7 +7,7 @@
 
     <servlet>
         <servlet-name>HelloWorld</servlet-name>
-        <servlet-class>com.nixiedroid.jakarta.rest.WebXmlServlet</servlet-class>
+        <servlet-class>com.nixiedroid.jakarta.rest.servlets.WebXmlServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>

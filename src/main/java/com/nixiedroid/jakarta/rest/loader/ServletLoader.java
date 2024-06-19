@@ -25,7 +25,7 @@ import java.util.zip.ZipInputStream;
  */
 public final class ServletLoader {
 
-    private static final String httpServletName = HttpServlet.class.getName();
+    private static final String httpServletPath = HttpServlet.class.getName().replace('.', '/');
     private final Tomcat tomcat;
     private final Context ctx;
 
@@ -37,30 +37,10 @@ public final class ServletLoader {
     public ServletLoader(final Tomcat cat, Context ctx) {
         this.tomcat = cat;
         this.ctx = ctx;
-        List<String> classes = getServletClassPaths();
-        if (classes != null) {
-            loadServletClasses(classes);
-        }
     }
 
-    /**
-     * Removes file extension from fileName:<br>
-     * file.txt -> file
-     *
-     * @param fileName
-     * @return file name without extension
-     */
-
-    private String removeFileExtension(String fileName) {
-        if (fileName.indexOf(".") > 0) {
-            return fileName.substring(0, fileName.lastIndexOf("."));
-        } else {
-            return fileName;
-        }
-    }
-
-    private String getRootPackageName() {
-        String pkgName = this.getClass().getPackageName();
+    private static String getRootPackageName() {
+        String pkgName = ServletLoader.class.getPackageName();
         if (pkgName.isEmpty()) return "";
         int i = pkgName.lastIndexOf('.');
         if (i == -1) {
@@ -69,36 +49,36 @@ public final class ServletLoader {
         return pkgName.substring(0, i);
     }
 
-    private void loadServletClasses(List<String> classPaths) {
-        for (String clz : classPaths) {
-            try {
-                Class<?> clazz = Class.forName(clz);
-                loadServlet(clazz);
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    private List<String> getServletClassPaths() {
-        String classPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
-        if (classPath.endsWith(".jar")) {
-            return loadServletsFromJar(classPath.replace("%20", " "));
+    /**
+     * Finds all class files, extending {@link jakarta.servlet.http.HttpServlet}
+     * in exploded file tree or inside JAR file
+     *
+     * @return list of relative ClassPaths
+     */
+    private static List<String> findServletClasses() {
+        String codeSrc = ServletLoader.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        if (isJarFile()) {
+            return findServletClassesJar(codeSrc.replace("%20", " "));
         } else {
-            return loadExplodedServlets(classPath);
+            return findServletClassesFileTree(codeSrc);
         }
     }
 
-    public List<String> loadExplodedServlets(String classPath) {
+    private static boolean isJarFile() {
+        return ServletLoader.class.getProtectionDomain().getCodeSource().getLocation().getPath().endsWith(".jar");
+    }
+
+    private static List<String> findServletClassesFileTree(String classPath) {
         File classes = new File(classPath + getRootPackageName().replace('.', '/'));
         if (classes.exists()) {
             List<String> classNames = new ArrayList<>();
             parseFileTree(classes, classNames);
+            return classNames;
         }
         return null;
     }
 
-    public void parseFileTree(File root, List<String> classNames) {
+    private static void parseFileTree(File root, List<String> classNames) {
         File[] fClasses = root.listFiles();
         if (fClasses == null) return;
         for (File f : fClasses) {
@@ -106,17 +86,14 @@ public final class ServletLoader {
                 parseFileTree(f, classNames);
             } else {
                 try {
-                    ClassParser.RawInfo info = ClassParser.retrieveInfo(Files.readAllBytes(Path.of(f.toURI())));
-                    if (info.superClassName.replace('/', '.').equals(httpServletName))
-                        classNames.add(f.getPath());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    checkAndAdd(Files.readAllBytes(Path.of(f.toURI())), classNames);
+                } catch (IOException ignored) {
                 }
             }
         }
     }
 
-    public byte[] read(ZipInputStream zis, int size) throws IOException {
+    private static byte[] read(ZipInputStream zis, int size) throws IOException {
         byte[] bytes = new byte[size];
         int read = 0;
         while (read < size) {
@@ -125,7 +102,14 @@ public final class ServletLoader {
         return bytes;
     }
 
-    public List<String> loadServletsFromJar(String jarPath) {
+    private static void checkAndAdd(byte[] classFile, List<String> classNames) {
+        ClassParser.RawInfo info = ClassParser.retrieveInfo(classFile);
+        if (info != null && info.superClassName.equals(httpServletPath)) {
+            classNames.add(info.name);
+        }
+    }
+
+    private static List<String> findServletClassesJar(String jarPath) {
         try {
             List<String> classNames = new ArrayList<>();
             ZipInputStream zip = new ZipInputStream(new FileInputStream(jarPath));
@@ -133,17 +117,30 @@ public final class ServletLoader {
                 if (!entry.isDirectory() && entry.getName().endsWith(".class")) {
                     String className = entry.getName().replace('/', '.');
                     if (className.startsWith(getRootPackageName())) {
-                        ClassParser.RawInfo info = ClassParser.retrieveInfo(read(zip, (int) entry.getSize()));
-                        if (info.superClassName.replace('/', '.')
-                                .equals(httpServletName)) {
-                            classNames.add(className.substring(0, className.length() - ".class".length()));
-                        }
+                        checkAndAdd(read(zip, (int) entry.getSize()), classNames);
                     }
                 }
             }
             return classNames;
         } catch (IOException e) {
             return null;
+        }
+    }
+
+    public void findAndLoadServlets() {
+        List<String> classes = findServletClasses();
+        loadServletClasses(classes);
+    }
+
+    private void loadServletClasses(List<String> fullClassNames) {
+        if (fullClassNames == null) return;
+        for (String className : fullClassNames) {
+            try {
+                Class<?> clazz = Class.forName(className.replace('/', '.'));
+                loadServlet(clazz);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -177,8 +174,7 @@ public final class ServletLoader {
 
     public void loadServlet(Class<?> servletClass, final String[] urlPatterns) {
         if (servletClass == null) throw new IllegalArgumentException("Servlet class must not be null");
-        if (servletClass.getSuperclass() != null &&
-                servletClass.getSuperclass().equals(HttpServlet.class)) {
+        if (servletClass.getSuperclass() != null && servletClass.getSuperclass().equals(HttpServlet.class)) {
             try {
                 String servletName = servletClass.getSimpleName();
                 WebServlet servletAnnotation = servletClass.getAnnotation(WebServlet.class);

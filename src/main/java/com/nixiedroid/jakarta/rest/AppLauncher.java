@@ -7,13 +7,17 @@ import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 public class AppLauncher {
     private final Tomcat tomcat = new Tomcat();
 
     AppLauncher() throws LifecycleException {
+        System.out.println(System.getProperty("java.io.tmpdir"));
         initTomcat();
         tomcat.start();
         tomcat.getServer().await();
@@ -41,13 +45,35 @@ public class AppLauncher {
         String srcWebappPath = "src/main/webapp/";
         Context context;
         if (Files.exists(Path.of(srcWebappPath))) {  //Running inside IDE
-            context = tomcat.addWebapp("/", new File(srcWebappPath).getAbsolutePath());
-        } else { //Running from jar file OR
-            context = tomcat.addWebapp("/", new File(".").getAbsolutePath());
+            context = tomcat.addWebapp("", new File(srcWebappPath).getAbsolutePath());
+        } else {
+            context = tomcat.addWebapp("", new File(".").getAbsolutePath());
         }
-        //File file = File.createTempFile("tempfile", ".tmp");
-        //  context.setAltDDName("");
-        new ServletLoader(tomcat, context);
+        if (isJarFile()) {
+            extractWebXml(context);
+        }
+        new ServletLoader(tomcat, context).findAndLoadServlets();
+    }
+
+    private void extractWebXml(Context context) {
+        File dest = new File("web.xml");
+        try (InputStream is = getClass().getResourceAsStream("/META-INF/resources/WEB-INF/web.xml")) {
+            if (is != null) {
+                Files.copy(is, dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                    File f = new File("web.xml");
+                    if (f.exists()) f.delete();
+                }));
+            }
+            context.setAltDDName("web.xml");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private boolean isJarFile() {
+        String fName = ServletLoader.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        return fName.endsWith(".jar");
     }
 
     private Connector createConnector() {
