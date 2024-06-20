@@ -64,9 +64,15 @@ public final class ServletLoader {
         }
     }
 
+    /**
+     * Checks if Application is Running from jar file
+     *
+     * @return boolean value
+     */
     private static boolean isJarFile() {
         return ServletLoader.class.getProtectionDomain().getCodeSource().getLocation().getPath().endsWith(".jar");
     }
+
 
     private static List<String> findServletClassesFileTree(String classPath) {
         File classes = new File(classPath + getRootPackageName().replace('.', '/'));
@@ -144,43 +150,30 @@ public final class ServletLoader {
         }
     }
 
-    public void loadServlet(Class<?> servletClass) {
-        loadServlet(servletClass, new String[]{});
-    }
-
-    @SuppressWarnings("unused")
-    public void loadServlet(Class<?> servletClass, String url) {
-        loadServlet(servletClass, new String[]{url});
-    }
-
-    private void placeMappings(WebServlet annotation, final String[] urlPatterns, final String servletName) {
-        if (urlPatterns == null && annotation == null) return;
-        if (urlPatterns != null && urlPatterns.length > 0) {
-            for (String url : urlPatterns) {
+    private void placeMappings(WebServlet annotation, final String servletName) {
+        if (annotation == null) return;
+        if (annotation.value().length > 0) {
+            for (String url : annotation.value()) {
                 ctx.addServletMappingDecoded(url, servletName);
             }
-        } else if (annotation != null) {
-            if (annotation.value().length > 0) {
-                for (String url : annotation.value()) {
-                    ctx.addServletMappingDecoded(url, servletName);
-                }
-            } else {
-                for (String url : annotation.urlPatterns()) {
-                    ctx.addServletMappingDecoded(url, servletName);
-                }
+        } else {
+            for (String url : annotation.urlPatterns()) {
+                ctx.addServletMappingDecoded(url, servletName);
             }
         }
     }
 
-    public void loadServlet(Class<?> servletClass, final String[] urlPatterns) {
+    private void loadServlet(Class<?> servletClass) {
         if (servletClass == null) throw new IllegalArgumentException("Servlet class must not be null");
         if (servletClass.getSuperclass() != null && servletClass.getSuperclass().equals(HttpServlet.class)) {
             try {
                 String servletName = servletClass.getSimpleName();
                 WebServlet servletAnnotation = servletClass.getAnnotation(WebServlet.class);
-                HttpServlet servlet = (HttpServlet) servletClass.getConstructor().newInstance();
-                tomcat.addServlet(ctx.getPath(), servletName, servlet);
-                placeMappings(servletAnnotation, urlPatterns, servletName);
+                if (servletAnnotation != null) {
+                    HttpServlet servlet = (HttpServlet) servletClass.getConstructor().newInstance();
+                    tomcat.addServlet(ctx.getPath(), servletName, servlet);
+                    placeMappings(servletAnnotation, servletName);
+                }
             } catch (ReflectiveOperationException e) {
                 throw new RuntimeException(e);
             }

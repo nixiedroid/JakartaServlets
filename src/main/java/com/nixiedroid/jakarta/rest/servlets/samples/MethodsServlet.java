@@ -1,4 +1,4 @@
-package com.nixiedroid.jakarta.rest.servlets;
+package com.nixiedroid.jakarta.rest.servlets.samples;
 
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;

@@ -1,14 +1,14 @@
 package com.nixiedroid.jakarta.rest.jdbc;
 
-public class PostgresConnector extends Connector {
+public class MySQLConnector extends Connector{
     @Override
     protected String getDriverName() {
-        return "org.postgresql.Driver";
+        return "com.mysql.cj.jdbc.Driver";
     }
 
     @Override
     protected String getUserName() {
-        return "coffees";
+        return "user";
     }
 
     @Override
@@ -28,11 +28,11 @@ public class PostgresConnector extends Connector {
 
     @Override
     protected String getPort() {
-        return "5432";
+        return "3306";
     }
 
     @Override
     protected String getUrlBase() {
-        return "postgresql";
+        return "mysql";
     }
 }

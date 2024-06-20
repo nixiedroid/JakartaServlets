@@ -1,4 +1,4 @@
-package com.nixiedroid.jakarta.rest.servlets;
+package com.nixiedroid.jakarta.rest.servlets.samples;
 
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 @WebServlet("/hello")
-public class HelloServlet extends HttpServlet {
+public class ReqParamsReceiver extends HttpServlet {
 
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("text/html");

@@ -1,22 +1,20 @@
 package com.nixiedroid.jakarta.rest.servlets;
 
 import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpServlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 
-@WebServlet("/id")
-public class IdServlet extends HttpServlet {
-
+public class ErrorPage extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("text/html");
         try (PrintWriter writer = resp.getWriter()) {
-            String id = req.getParameter("id");
-            writer.println("<h2>Id:" + id + "</h2>");
+            writer.println("<h1>Page not found</h1>");
+            writer.println("<h2>"+req.getRequestURI()+"</h2>");
         }
     }
 }

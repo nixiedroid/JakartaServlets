@@ -5,14 +5,62 @@
                       http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
          version="4.0">
 
+    <context-param>
+        <param-name>appName</param-name>
+        <param-value>Jakarta Servlets</param-value>
+    </context-param>
+
     <servlet>
-        <servlet-name>HelloWorld</servlet-name>
-        <servlet-class>com.nixiedroid.jakarta.rest.servlets.WebXmlServlet</servlet-class>
+        <servlet-name>WebXML</servlet-name>
+        <servlet-class>com.nixiedroid.jakarta.rest.servlets.samples.WebXmlServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>HelloWorld</servlet-name>
+        <servlet-name>WebXML</servlet-name>
         <url-pattern>/webXml</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>WebXMLParams</servlet-name>
+        <servlet-class>com.nixiedroid.jakarta.rest.servlets.samples.WebXmlServletParams</servlet-class>
+
+        <init-param>
+            <param-name>servletVersion</param-name>
+            <param-value>0.1.3</param-value>
+        </init-param>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>WebXMLParams</servlet-name>
+        <url-pattern>/webXmlParams</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ErrorPage</servlet-name>
+        <servlet-class>com.nixiedroid.jakarta.rest.servlets.ErrorPage</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>ErrorPage</servlet-name>
+        <url-pattern>/error</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>CoffeeListController</servlet-name>
+        <servlet-class>com.nixiedroid.jakarta.rest.servlets.CoffeeListController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>CoffeeListController</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+    
+    <error-page>
+        <location>/error</location>
+    </error-page>
+
+    <error-page>
+        <exception-type>java.lang.Throwable</exception-type>
+        <location>/exception.jsp</location>
+    </error-page>
 </web-app>

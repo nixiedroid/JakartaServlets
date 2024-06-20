@@ -53,8 +53,11 @@ dependencies {
     // https://mvnrepository.com/artifact/org.apache.tomcat.embed/tomcat-embed-jasper
     implementation 'org.apache.tomcat.embed:tomcat-embed-jasper:10.1.24'
 
-    // https://mvnrepository.com/artifact/jakarta.servlet.jsp.jstl/jakarta.servlet.jsp.jstl-api
+    implementation 'org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.1'
     implementation 'jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:3.0.0'
+
+    // https://mvnrepository.com/artifact/org.apache.taglibs/taglibs-standard-impl
+    runtimeOnly 'org.apache.taglibs:taglibs-standard-impl:1.2.5'
 
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
     runtimeOnly 'org.postgresql:postgresql:42.7.3'

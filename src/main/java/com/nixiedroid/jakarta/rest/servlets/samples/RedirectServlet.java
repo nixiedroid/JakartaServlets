@@ -1,4 +1,4 @@
-package com.nixiedroid.jakarta.rest.servlets;
+package com.nixiedroid.jakarta.rest.servlets.samples;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletContext;
@@ -13,10 +13,9 @@ import java.io.IOException;
 @WebServlet("/redirect")
 public class RedirectServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
         ServletContext ctx = getServletContext();
-      //  RequestDispatcher requestDispatcher = ctx.getRequestDispatcher("/redirect.html");
-        RequestDispatcher requestDispatcher = ctx.getRequestDispatcher("/methods");
+        RequestDispatcher requestDispatcher = ctx.getRequestDispatcher("/redirect.html");
+        //RequestDispatcher requestDispatcher = ctx.getRequestDispatcher("/methods");
         requestDispatcher.forward(request, response);
     }
 }

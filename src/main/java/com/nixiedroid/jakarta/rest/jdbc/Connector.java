@@ -9,12 +9,26 @@ import java.util.ArrayList;
 
 public abstract class Connector {
 
+    public Connector() {
+        try {
+            Class.forName(getDriverName()).getConstructor().newInstance();
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private static String fixL11n(String bad) {
         try {
             return new String(bad.getBytes(StandardCharsets.UTF_8), "Windows-1251");
         } catch (UnsupportedEncodingException ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+
+    private Connection connect() throws SQLException {
+        String url = "jdbc:" + getUrlBase() + "://" + getHost() + ":" + getPort() + "/" + getDBName();
+        return DriverManager.getConnection(url, getUserName(), getPassword());
     }
 
     public Coffee getCoffeeById(int id) {
@@ -86,5 +100,18 @@ public abstract class Connector {
         }
     }
 
-    protected abstract Connection connect() throws SQLException;
+
+    protected abstract String getDriverName();
+
+    protected abstract String getUrlBase();
+
+    protected abstract String getHost();
+
+    protected abstract String getPort();
+
+    protected abstract String getDBName();
+
+    protected abstract String getUserName();
+
+    protected abstract String getPassword();
 }
