@@ -12,7 +12,7 @@ public class AppLauncher {
     //"C:\Program Files\Java\jdk-17.0.2\bin\jar.exe" -xvf JakartaServlets-1.0-SNAPSHOT.war && java -cp "WEB-INF\classes\;WEB-INF\lib\*" com.nixiedroid.jakarta.rest.AppLauncher
     public static void main(String[] args) {
         try {
-            TomcatEmbedStarter.start(8080);
+            TomcatEmbedStarter.start(8087);
         } catch (LifecycleException e){
             throw new RuntimeException(e);
         }

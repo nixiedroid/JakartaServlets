@@ -12,18 +12,21 @@ public class Coffee implements Serializable {
 
     private int id;
     private String name;
+    private boolean has_milk;
     private Timestamp created;
 
     public Coffee() {
     }
 
-    public Coffee(String name) {
+    public Coffee(String name,boolean has_milk) {
         this.name = name;
+        this.has_milk = has_milk;
     }
 
-    public Coffee(int id, String name, Timestamp created) {
+    public Coffee(int id, String name, boolean has_milk, Timestamp created) {
         this.created = created;
         this.name = name;
+        this.has_milk = has_milk;
         this.id = id;
     }
 
@@ -31,6 +34,9 @@ public class Coffee implements Serializable {
         return created;
     }
 
+    public boolean isHas_milk() {
+        return has_milk;
+    }
 
     public String getName() {
         return name;

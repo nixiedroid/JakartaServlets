@@ -13,11 +13,11 @@ class ConnectorTest {
         for (Coffee c : con.getAllCoffees()) {
             System.out.println(c.getId() + " - " + c.getName());
         }
-        con.insert(new Coffee(2, "Laa", new Timestamp(new Date().getTime())));
+        con.insert(new Coffee(2, "Laa",false, new Timestamp(new Date().getTime())));
         for (Coffee c : con.getAllCoffees()) {
             System.out.println(c.getId() + " - " + c.getName());
         }
-        con.update(new Coffee(2, "LOL", new Timestamp(new Date().getTime())));
+        con.update(new Coffee(2, "LOL",true, new Timestamp(new Date().getTime())));
         for (Coffee c : con.getAllCoffees()) {
             System.out.println(c.getId() + " - " + c.getName());
         }

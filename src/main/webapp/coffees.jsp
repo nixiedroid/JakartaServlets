@@ -6,6 +6,8 @@
     <title>Title</title>
 </head>
 <body>
+<jsp:useBean id="coffees" scope="request" class="java.util.ArrayList"/>
+<jsp:useBean id="coffee" scope="request" class="com.nixiedroid.jakarta.rest.models.Coffee"/>
 <c:if test="${coffees.size()==0}">
     Empty for now
 </c:if>
@@ -14,20 +16,22 @@
     <table>
         <tr>
             <th>Name</th>
+            <th>Has Milk</th>
             <th>Delete</th>
             <th>Edit</th>
         </tr>
         <c:forEach items="${coffees}" var="coffee">
             <tr>
                 <td>${coffee.name}</td>
+                <td>${coffee.has_milk}</td>
                 <td>
-                    <form action="/coffee/delete" method="post">
+                    <form action="${pageContext.request.contextPath}/delete" method="post">
                         <input type="submit" value="Delete">
                         <input type="hidden" value="${coffee.id}" name="id">
                     </form>
                 </td>
                 <td>
-                    <form action="/coffee/edit" method="post">
+                    <form action="${pageContext.request.contextPath}/edit" method="post">
                         <input type="submit" value="Edit">
                         <input type="hidden" value="${coffee.id}" name="id">
                     </form>
@@ -35,18 +39,21 @@
             </tr>
         </c:forEach>
     </table>
-    <form action="/coffee/find" method="post">
+    <form action="${pageContext.request.contextPath}/find" method="post">
         <input type="text" placeholder="Find" name="find" pattern="[a-zA-Zа-яА-ЯёЁ]+"/>
         <input type="submit" value="Find">
     </form>
 </c:if>
 <c:if test="${coffee.id == 0}"> Add coffee: </c:if>
 <c:if test="${coffee.id != 0}"> Edit coffee: </c:if>
-<form method="post" action="/coffee/add" modelAttribute="product">
+<form method="post" action="${pageContext.request.contextPath}/add">
     <div>
         Name
-        <input placeholder=" " path="name" required="required"/></div>
-    <div><span class="form__error" style="text-align: center">Wrong input</span></div>
+        <input placeholder=" " name="name" required="required"/>
+    </div>
+    <div>
+        Has milk
+        <input type="checkbox" name="hasMilk"></div>
     <hidden path="id"></hidden>
     <div>
         <button type="submit">SAVE</button>
