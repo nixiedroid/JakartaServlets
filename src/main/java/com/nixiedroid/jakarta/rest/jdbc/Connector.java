@@ -50,10 +50,9 @@ public abstract class Connector {
 
     public int insert(Coffee coffee) {
         if (getCoffeeById(coffee.getId()) == null) {
-            try (Connection connection = connect(); PreparedStatement insertInto = connection.prepareStatement("INSERT INTO site.coffees (id, name,has_milk) values (?,?,?)")) {
-                insertInto.setInt(1, coffee.getId());
-                insertInto.setString(2, coffee.getName());
-                insertInto.setBoolean(3,coffee.isHas_milk());;
+            try (Connection connection = connect(); PreparedStatement insertInto = connection.prepareStatement("INSERT INTO site.coffees (name,has_milk) values (?,?)")) {
+                insertInto.setString(1, coffee.getName());
+                insertInto.setBoolean(2,coffee.isHas_milk());;
                 return insertInto.executeUpdate();
             } catch (SQLException e) {
                 throw new RuntimeException(fixL11n(e.getMessage()));
@@ -63,12 +62,13 @@ public abstract class Connector {
     }
 
     public int update(Coffee coffee) {
-        if (getCoffeeById(coffee.getId()) != null) {
+        Coffee editCoffee = getCoffeeById(coffee.getId()) ;
+        if (editCoffee != null) {
             try (Connection connection = connect(); PreparedStatement update = connection.prepareStatement("UPDATE site.coffees  SET  name=?, created=?, has_milk=? WHERE id=?")) {
                 update.setString(1, coffee.getName());
                 update.setTimestamp(2, coffee.getCreated());
                 update.setBoolean(3,coffee.isHas_milk());;
-                update.setInt(4, coffee.getId());
+                update.setInt(4, editCoffee.getId());
                 return update.executeUpdate();
             } catch (SQLException e) {
                 throw new RuntimeException(fixL11n(e.getMessage()));
@@ -79,7 +79,7 @@ public abstract class Connector {
 
     public ArrayList<Coffee> getAllCoffees() {
         ArrayList<Coffee> coffees = new ArrayList<>();
-        try (Connection connection = connect(); PreparedStatement getAll = connection.prepareStatement("SELECT * FROM site.coffees")) {
+        try (Connection connection = connect(); PreparedStatement getAll = connection.prepareStatement("SELECT * FROM site.coffees ORDER BY id")) {
             ResultSet resultSet = getAll.executeQuery();
             while (resultSet.next()) {
                 int id = resultSet.getInt(1);

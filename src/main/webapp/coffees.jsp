@@ -40,24 +40,31 @@
         </c:forEach>
     </table>
     <form action="${pageContext.request.contextPath}/find" method="post">
-        <input type="text" placeholder="Find" name="find" pattern="[a-zA-Zа-яА-ЯёЁ]+"/>
+        <input type="search" placeholder="Find" name="find" pattern="[a-zA-Zа-яА-ЯёЁ]+"/>
         <input type="submit" value="Find">
     </form>
 </c:if>
 <c:if test="${coffee.id == 0}"> Add coffee: </c:if>
 <c:if test="${coffee.id != 0}"> Edit coffee: </c:if>
+
 <form method="post" action="${pageContext.request.contextPath}/add">
     <div>
-        Name
-        <input placeholder=" " name="name" required="required"/>
+        <button type="submit">Submit</button>
     </div>
-    <div>
-        Has milk
-        <input type="checkbox" name="hasMilk"></div>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Has milk</th>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" placeholder=" " name="name" value="${coffee.name}"/>
+            </td>
+            <td>
+                <input type="checkbox" name="hasMilk">
+            </td>
+        </tr>
+    </table>
     <hidden path="id"></hidden>
-    <div>
-        <button type="submit">SAVE</button>
-    </div>
 </form>
-
 </body>

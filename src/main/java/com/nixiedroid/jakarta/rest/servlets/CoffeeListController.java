@@ -3,6 +3,7 @@ package com.nixiedroid.jakarta.rest.servlets;
 import com.nixiedroid.jakarta.rest.jdbc.Connector;
 import com.nixiedroid.jakarta.rest.jdbc.PostgresConnector;
 import com.nixiedroid.jakarta.rest.models.Coffee;
+import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -51,9 +52,12 @@ public class CoffeeListController extends HttpServlet {
         res.sendRedirect(req.getContextPath() + "/");
     }
     private void edit(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-        List<Coffee> coffees = con.getAllCoffees();
-        req.setAttribute("coffees", coffees);
-        getServletContext().getRequestDispatcher("/coffees.jsp").forward(req, res);
+        String idString = req.getParameter("id");
+        int id = (idString==null || idString.isEmpty())? -1 : Integer.parseInt(idString);
+        req.setAttribute("coffee", con.getCoffeeById(id));
+        RequestDispatcher rd = req.getRequestDispatcher("/");
+        rd.forward(req, res);
+        //res.sendRedirect(req.getContextPath() + "/");
     }
     private void find(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         List<Coffee> coffees = con.getAllCoffees();
@@ -63,7 +67,8 @@ public class CoffeeListController extends HttpServlet {
     private void add(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         String name = req.getParameter("name");
         String hasMilk = req.getParameter("hasMilk");
-        if (name!= null && hasMilk != null) con.insert(new Coffee(name,Boolean.getBoolean(hasMilk)));
+        boolean hasmilk = (hasMilk!=null && hasMilk.equals("on"));
+        if (name!= null && !name.isEmpty()) con.insert(new Coffee(name,hasmilk));
         res.sendRedirect(req.getContextPath() + "/");
     }
 

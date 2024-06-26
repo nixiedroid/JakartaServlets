@@ -24,6 +24,7 @@ war {
 }
 application {
     mainClass = "com.nixiedroid.jakarta.rest.AppLauncher"
+    applicationDefaultJvmArgs  = ["-Dserver.tomcat.accesslog.enabled=true"]
 }
 ext {
     junitVersion = '5.10.2'
