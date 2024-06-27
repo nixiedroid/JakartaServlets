@@ -77,6 +77,25 @@ public abstract class Connector {
         return 0;
     }
 
+    public ArrayList<Coffee> findByName(String name){
+        ArrayList<Coffee> coffees = new ArrayList<>();
+        try (Connection connection = connect(); PreparedStatement getAll = connection.prepareStatement("SELECT * FROM site.coffees WHERE name = ? ORDER BY id")) {
+            getAll.setString(1,name);
+            ResultSet resultSet = getAll.executeQuery();
+            while (resultSet.next()) {
+                int id = resultSet.getInt(1);
+                String Cname = resultSet.getString(2);
+                boolean has_milk = resultSet.getBoolean(3);
+                Timestamp ts = resultSet.getTimestamp(4);
+                Coffee coffee = new Coffee(id, Cname, has_milk, ts);
+                coffees.add(coffee);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(fixL11n(e.getMessage()));
+        }
+        return coffees;
+    }
+
     public ArrayList<Coffee> getAllCoffees() {
         ArrayList<Coffee> coffees = new ArrayList<>();
         try (Connection connection = connect(); PreparedStatement getAll = connection.prepareStatement("SELECT * FROM site.coffees ORDER BY id")) {
@@ -96,9 +115,14 @@ public abstract class Connector {
     }
 
     public int deleteByID(int id) {
-        try (Connection connection = connect(); PreparedStatement del = connection.prepareStatement("DELETE FROM site.coffees WHERE id = ?")) {
-            del.setInt(1, id);
-            return del.executeUpdate();
+        try (Connection connection = connect();
+             PreparedStatement delCoffee = connection.prepareStatement("DELETE FROM site.coffees WHERE id = ?");
+        PreparedStatement delFav = connection.prepareStatement("DELETE FROM site.favourite_coffees WHERE coffee_id = ?")
+        ) {
+            delFav.setInt(1, id);
+            delFav.executeUpdate();
+            delCoffee.setInt(1,id);
+            return delCoffee.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(fixL11n(e.getMessage()));
         }

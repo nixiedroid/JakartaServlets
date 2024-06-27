@@ -38,6 +38,10 @@ public class Coffee implements Serializable {
         return has_milk;
     }
 
+    public void setHas_milk(boolean has_milk) {
+        this.has_milk = has_milk;
+    }
+
     public String getName() {
         return name;
     }
