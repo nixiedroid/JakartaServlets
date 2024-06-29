@@ -1,6 +1,6 @@
 package com.nixiedroid.jakarta.rest.servlets;
 
-import com.nixiedroid.jakarta.rest.jdbc.Connector;
+import com.nixiedroid.jakarta.rest.jdbc.CoffeeSvc;
 import com.nixiedroid.jakarta.rest.jdbc.PostgresConnector;
 import com.nixiedroid.jakarta.rest.models.Coffee;
 import jakarta.servlet.ServletException;
@@ -13,16 +13,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CoffeeListController extends HttpServlet {
-    Connector con = new PostgresConnector();
+    CoffeeSvc svc = new CoffeeSvc(new PostgresConnector());
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
-        String action = req.getServletPath();
-        switch (action) {
-            default:
-                list(req, res);
-                break;
-        }
+        list(req, res);
     }
 
     @Override
@@ -48,26 +43,26 @@ public class CoffeeListController extends HttpServlet {
     }
 
     private void list(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-        List<Coffee> coffees = con.getAllCoffees();
+        List<Coffee> coffees = svc.getAllCoffees();
         req.setAttribute("coffees", coffees);
         getServletContext().getRequestDispatcher("/coffees.jsp").forward(req, res);
     }
-    private void delete(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+    private void delete(HttpServletRequest req, HttpServletResponse res) throws IOException {
         String id = req.getParameter("id");
-        if (id!= null) con.deleteByID(Integer.parseInt(id));
+        if (id!= null) svc.deleteByID(Integer.parseInt(id));
         res.sendRedirect(req.getContextPath() + "/");
     }
     private void edit(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         String idString = req.getParameter("id");
         int id = (idString==null || idString.isEmpty())? -1 : Integer.parseInt(idString);
-        req.setAttribute("coffee", con.getCoffeeById(id));
+        req.setAttribute("coffee", svc.getCoffeeById(id));
         getServletContext().getRequestDispatcher("/editCoffee.jsp").forward(req, res);
     }
-    private void editSubmit(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+    private void editSubmit(HttpServletRequest req, HttpServletResponse res) throws IOException {
         String idString = req.getParameter("id");
         int id = (idString==null || idString.isEmpty())? -1 : Integer.parseInt(idString);
         if (id >0) {
-            Coffee edited = con.getCoffeeById(id);
+            Coffee edited = svc.getCoffeeById(id);
             if (edited!= null) {
                 String name = req.getParameter("name");
                 String hasMilk = req.getParameter("hasMilk");
@@ -76,7 +71,7 @@ public class CoffeeListController extends HttpServlet {
                     edited.setName(name);
                 }
                 edited.setHas_milk(hasmilk);
-                con.update(edited);
+                svc.update(edited);
             }
         }
         res.sendRedirect("/");
@@ -85,16 +80,16 @@ public class CoffeeListController extends HttpServlet {
         List<Coffee> coffees;
         String name = req.getParameter("name");
         if (name != null && !name.isEmpty()) {
-            coffees = con.findByName(name);
+            coffees = svc.findByName(name);
         } else coffees = new ArrayList<>();
         req.setAttribute("coffees", coffees);
         getServletContext().getRequestDispatcher("/findCoffee.jsp").forward(req, res);
     }
-    private void add(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+    private void add(HttpServletRequest req, HttpServletResponse res) throws IOException {
         String name = req.getParameter("name");
         String hasMilk = req.getParameter("hasMilk");
         boolean hasmilk = (hasMilk!=null && hasMilk.equals("on"));
-        if (name!= null && !name.isEmpty()) con.insert(new Coffee(name,hasmilk));
+        if (name!= null && !name.isEmpty()) svc.insert(new Coffee(name,hasmilk));
         res.sendRedirect(req.getContextPath() + "/");
     }
 

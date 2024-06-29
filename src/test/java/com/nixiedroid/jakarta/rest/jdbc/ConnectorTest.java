@@ -9,20 +9,20 @@ import java.util.Date;
 class ConnectorTest {
     @Test
     void test() {
-        Connector con = new PostgresConnector();
-        for (Coffee c : con.getAllCoffees()) {
+        CoffeeSvc svc = new CoffeeSvc(new PostgresConnector());
+        for (Coffee c : svc.getAllCoffees()) {
             System.out.println(c.getId() + " - " + c.getName());
         }
-        con.insert(new Coffee(2, "Laa",false, new Timestamp(new Date().getTime())));
-        for (Coffee c : con.getAllCoffees()) {
+        svc.insert(new Coffee(2, "Laa",false, new Timestamp(new Date().getTime())));
+        for (Coffee c : svc.getAllCoffees()) {
             System.out.println(c.getId() + " - " + c.getName());
         }
-        con.update(new Coffee(2, "LOL",true, new Timestamp(new Date().getTime())));
-        for (Coffee c : con.getAllCoffees()) {
+        svc.update(new Coffee(2, "LOL",true, new Timestamp(new Date().getTime())));
+        for (Coffee c : svc.getAllCoffees()) {
             System.out.println(c.getId() + " - " + c.getName());
         }
-        con.deleteByID(2);
-        for (Coffee c : con.getAllCoffees()) {
+        svc.deleteByID(2);
+        for (Coffee c : svc.getAllCoffees()) {
             System.out.println(c.getId() + " - " + c.getName());
         }
     }
